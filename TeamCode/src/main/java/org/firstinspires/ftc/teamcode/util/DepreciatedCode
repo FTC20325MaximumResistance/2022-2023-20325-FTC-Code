@@ -1,0 +1,129 @@
+This file contains all the code that I removed and swapped out for one reason or another
+
+Crane Arm Trigonometry:
+
+double ph = height_offset;
+        switch(this.height){
+            case(1):
+                ph += 13.5;
+                break;
+            case 2:
+                ph +=23.5;
+                break;
+            case 3:
+                ph += 33.5;
+                break;
+        }
+        double td = arm_offset;
+        double hr = ph;
+        double lr = td;
+        double arm1_angle;
+        double arm2_angle;
+        boolean too_big;
+        if (ph < arm1_l){
+            arm1_angle = Math.asin(ph/arm1_l);
+            ph = 0;
+        }else{
+            arm1_angle = 45;
+            ph -= td * Math.sin(45);
+        }
+        if (lr - td * Math.cos(arm1_angle) < arm2_l){
+            arm1_angle += 90;
+            lr += td * Math.cos(arm1_angle);
+            too_big = true;
+        } else{lr -= td * Math.cos(arm1_angle);
+            too_big = false;}
+        if (hr > 0){
+            arm2_angle = Math.asin(hr/arm2_l);
+            lr -= lr * (Math.cos(arm2_angle));
+        }else{
+            arm2_angle = 0;
+            lr -= arm2_l;
+        }
+        if (too_big){
+            arm2_angle += arm1_angle;
+        }else{arm2_angle += 270-arm1_angle;}
+        opMode.telemetry.addData("Arm 1 Angle", arm1_angle);
+        opMode.telemetry.addData("Arm 2 Angle", arm2_angle);
+        //degree_move_arm(1, 0.9, arm1_angle);
+        //degree_move_arm(2, 0.4, arm2_angle);
+        opMode.telemetry.update();
+
+
+Old Move
+//int[] inchess;
+        int inches1 = frontLeft.getCurrentPosition()+(int) inches;
+        int inches2 = frontRight.getCurrentPosition()+(int) -inches;
+        int inches3 = backLeft.getCurrentPosition()+(int) -inches;
+        int inches4 = backRight.getCurrentPosition()+(int) inches;
+        //inchess = new int[]{inches1, inches2, inches3, inches4};
+        switch (dir){
+            case RIGHT:
+                inches2 *= -1;
+                inches3 *= -1;
+                break;
+            case LEFT:
+                inches1 *= -1;
+                inches4 *= -1;
+                break;
+            case BACKWARD:
+                inches1 *= -1;
+                inches2 *= -1;
+                inches3 *= -1;
+                inches4 *= -1;
+                break;
+        }
+        frontLeft.setTargetPosition(inches1);
+        frontRight.setTargetPosition(inches2);
+        backLeft.setTargetPosition(inches3);
+        backRight.setTargetPosition(inches4);
+        setDriverMotorMode(DcMotor.RunMode.RUN_TO_POSITION);
+        for (DcMotor motor: drive){
+            motor.setPower(power);
+        }
+
+
+
+        boolean done = false;
+        while (!done){
+            done = getTolerance(frontLeft.getCurrentPosition(), frontLeft.getTargetPosition(), 1);
+        }
+        for (DcMotor motor: drive){
+            motor.setPower(0.0);
+        }
+        setDriverMotorMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        waiter(50);
+
+dperr used to be 9.53
+
+
+
+Old Arm code
+
+if (!a.isAlive() && !a1.isAlive()){
+            r.arm2.setPower(gamepad2.right_stick_x * deflator2);
+            r.arm3.setPower(gamepad2.right_stick_x * deflator2);
+            if (gamepad2.dpad_up && heightSelect < 3){heightSelect += 1; r.waiter(250);}
+            if (gamepad2.dpad_down && heightSelect > 1){heightSelect -= 1; r.waiter(250);}
+            if (gamepad2.y){
+                switch (heightSelect){
+                    case 1:
+                        a.moveArm(1, 0, false, true);
+                        a1.moveArm(2,-33, false, true);
+                        break;
+                    case 2:
+                        a.moveArm(1, 6541, false, false);
+                        a1.moveArm(2,-69, false, false);
+                        break;
+                    case 3:
+                        a.moveArm(1, 0, false, false);
+                        a1.moveArm(2,0, false, false);
+                        break;
+                }
+            }
+        }
+
+New Arm code
+
+r.arm1.setPower(gamepad2.left_stick_x*deflator2);
+r.arm2.setPower(gamepad2.right_stick_x*deflator2);
